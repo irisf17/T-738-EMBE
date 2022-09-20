@@ -17,6 +17,16 @@ public:
     void test_underflow();
     void test_overflow();
     void test_overwrite();
+
+    int *head = buffer;
+    int *tail = buffer;
+    int init = 0;
+    int circular_get();
+    void circular_put(int item);
+    bool circular_is_empty();
+    bool circular_is_full();
+    void circular_reset();
+
 private:
     int buffer[FIFO_SIZE];
     int position = 0;
