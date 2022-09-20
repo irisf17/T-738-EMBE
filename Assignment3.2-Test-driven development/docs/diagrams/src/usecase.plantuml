@@ -1,0 +1,27 @@
+' RUN press alt+d
+' Starting with the PlantUML Use Case 
+' diagram showing the actors Producer and Consumer 
+' and the use cases Get and Put, add the Producer use 
+' case "reset" and the Consumer
+' use cases "is_emtpy" and "is_full".
+
+
+@startuml
+left to right direction
+actor "Producer" as producer
+actor "Consumer" as consumer
+
+rectangle fifo {
+  usecase "put" as put
+  usecase "reset" as reset
+  usecase "get" as get
+  usecase "is_empty" as is_empty
+  usecase "is_full" as is_full
+}
+
+producer --> put
+producer --> reset
+consumer --> get
+consumer --> is_empty
+consumer --> is_full
+@enduml
