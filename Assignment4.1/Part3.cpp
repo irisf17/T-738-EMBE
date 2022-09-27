@@ -26,9 +26,7 @@ clean:
 
 
 // PART3
-
 // main.cpp
-
 #include <pthread.h>
 #include <stdint.h>
 #include "increment.h"
@@ -90,9 +88,7 @@ void *incrementTask(void *param)
     }
 }
 
-// decrement
-
-
+// decrement.cpp
 #include <stdio.h>
 #include <unistd.h>
 #include "decrement.h"
@@ -201,12 +197,11 @@ void Fifo::circular_reset()
     position = 0;
 }
 
-// Include files
-
-// increment
+// Header files
+// increment.h
 void *incrementTask(void *param);
 
-// Decrement
+// decrement.h
 void *decrementTask(void *param);
 
 // fifo.h

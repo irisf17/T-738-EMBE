@@ -1,6 +1,3 @@
-
-
-
 // PART1
 
 // main.cpp

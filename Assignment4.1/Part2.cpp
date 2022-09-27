@@ -30,7 +30,7 @@ int main(void)
     return 0;
 }
 
-// Increment
+// increment.cpp
 
 
 #include <unistd.h>
@@ -56,7 +56,7 @@ void *incrementTask(void *param)
     }
 }
 
-// Decrement
+// decrement.cpp
 
 void *decrementTask(void *param)
 {
@@ -73,6 +73,16 @@ void *decrementTask(void *param)
         pthread_mutex_unlock(&sharedVariableMutex);
     }
 }
+
+
+// header files
+
+// increment.h
+void *incrementTask(void *param);
+
+// decrement.h
+void *decrementTask(void *param);
+
 
 // Part 2 & 3 
 // MAKEfile
