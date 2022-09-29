@@ -10,11 +10,11 @@
 #include <p_controller.h>
 
 
-Digital_out output_1(5);
-Digital_out output_2(4);
-Digital_out PWM_pin(1);
-Digital_in encoder_input1(2);
-Digital_in encoder_input2(3);
+Digital_out output_1(5); //D13
+Digital_out output_2(4); //D12
+Digital_out PWM_pin(1); //D9
+Digital_in encoder_input1(2); //D10
+Digital_in encoder_input2(3); // DD11
 
 encoder enc;
 P_controller controller;

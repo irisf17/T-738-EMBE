@@ -36,7 +36,7 @@ void loop()
 	{
 		context->Set_pre();
 	}
-  // --- stop ---
+  // --- stop --- stop the motor
 	if(input == 's')
 	{
 		context->Stop();
