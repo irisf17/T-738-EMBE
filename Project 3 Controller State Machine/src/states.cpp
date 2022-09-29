@@ -12,7 +12,7 @@ Digital_out output_1(0); //D8
 Digital_out output_2(4); //D12
 Digital_out PWM_pin(1); //D9
 Digital_in encoder_input1(2); //D10
-Digital_in encoder_input2(3); // DD11
+Digital_in encoder_input2(3); // D11
 
 encoder enc;
 // P_controller controller;
@@ -31,9 +31,10 @@ void Initialization::on_entry()
   	// ------- H-bridge --------
   output_1.init();
 	output_2.init();
-	output_1.set_hi();
+  //motor is stop
+	output_1.set_lo(); 
 	output_2.set_lo();
-	enc.init(encoder_input1.is_hi());
+  PWM_pin.set_hi();
 
   // ----- For-encoder ----
 	encoder_input1.init();
@@ -45,10 +46,11 @@ void Initialization::on_entry()
     _delay_ms(2000);
 
   // ---- for timer ----
-	timer0.init(4000);
-	timer2_pwm.init(1500, duty_cycle);
+	// timer0.init(4000); fyrir p_controller
+	// timer2_pwm.init(1500, duty_cycle);
 
 	// for controller
+
 	// controller.init(P);
 
   timer1.init(10, 0.001);
@@ -93,6 +95,12 @@ void Operational::on_entry()
   // optionally do something on transition
   Serial.println("STATE: Operational");
   Serial.println("Led continous");
+  Serial.println("Start MOTOR");
+  // Counter clockwise rotation
+  output_1.set_lo(); 
+	output_2.set_hi();
+  PWM_pin.set_hi();
+
 //   led.set_hi();
   timer1.init(20, 0.9);
 }
