@@ -2,6 +2,9 @@
 #include <avr/delay.h>
 #include "timer_msec.h"
 #include "digital_out.h"
+#include "digital_in.h"
+#include "encoder.h"
+#include "timer2.h"
 
 // class Context;
 Digital_out led(5); //D13
@@ -31,6 +34,7 @@ void Initialization::on_entry()
   	// ------- H-bridge --------
   output_1.init();
 	output_2.init();
+  PWM_pin.init();
   //motor is stop
 	output_1.set_lo(); 
 	output_2.set_lo();
@@ -39,15 +43,15 @@ void Initialization::on_entry()
   // ----- For-encoder ----
 	encoder_input1.init();
 	encoder_input2.init();
-	enc.init(encoder_input1.is_hi());
+	// enc.init(encoder_input1.is_hi());
 	// use if encoder is connected to interrupt pins
-	enc.init_interrupt(); // nota ef thad a ad nota interrupts!!
+	// enc.init_interrupt(); // nota ef thad a ad nota interrupts!!
 
-    _delay_ms(2000);
+    _delay_ms(1000);
 
   // ---- for timer ----
 	// timer0.init(4000); fyrir p_controller
-	// timer2_pwm.init(1500, duty_cycle);
+	// timer2_pwm.init(1500,0.6);
 
 	// for controller
 
@@ -55,7 +59,8 @@ void Initialization::on_entry()
 
   timer1.init(10, 0.001);
   Serial.println("BOOT UP");
-  _delay_ms(3000);
+  // sei();
+  _delay_ms(1000);
   this->context_->transition_to(new Pre_Operational);
 
 }
@@ -65,6 +70,8 @@ void Pre_Operational::on_entry()
 {
   // optionally do something on transition
 	Serial.println("STATE: Pre Operational");
+  // stop motor
+  output_1.set_lo(); 
 	Serial.println("Led blinks at 1 Hz");
   timer1.init(1000, 0.5);
   Serial.println("Ready to recieve commands");
@@ -97,9 +104,9 @@ void Operational::on_entry()
   Serial.println("Led continous");
   Serial.println("Start MOTOR");
   // Counter clockwise rotation
-  output_1.set_lo(); 
-	output_2.set_hi();
-  PWM_pin.set_hi();
+  output_1.set_hi(); 
+	// output_2.set_lo();
+  // PWM_pin.set_hi();
 
 //   led.set_hi();
   timer1.init(20, 0.9);
@@ -128,6 +135,8 @@ void Stop_state::on_entry()
 {
   // optionally do something on transition
   Serial.println("STATE: Stop ");
+  // stop motor
+  output_1.set_lo(); 
   Serial.println("LED blinks at 2 Hz");
   timer1.init(500, 0.5);
 }
@@ -165,4 +174,16 @@ ISR(TIMER1_COMPA_vect)
 ISR(TIMER1_COMPB_vect)
 {
   led.set_lo();
+}
+
+// interrupt for timer2 pwm
+ISR(TIMER2_COMPA_vect)
+{
+	// for PWM
+	PWM_pin.set_hi();
+}
+// PWM
+ISR(TIMER2_COMPB_vect)
+{
+	PWM_pin.set_lo();
 }
