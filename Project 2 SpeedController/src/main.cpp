@@ -14,7 +14,7 @@ Digital_out output_1(5); //D13
 Digital_out output_2(4); //D12
 Digital_out PWM_pin(1); //D9
 Digital_in encoder_input1(2); //D10
-Digital_in encoder_input2(3); // DD11
+Digital_in encoder_input2(3); // D11
 
 encoder enc;
 P_controller controller;
@@ -60,7 +60,7 @@ int main()
 	output_1.set_hi();
 	output_2.set_lo();
 
-	enc.init(encoder_input1.is_hi());
+	// enc.init(encoder_input1.is_hi());
 
 	// ----- For-encoder ----
 	encoder_input1.init();

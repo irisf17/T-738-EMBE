@@ -2,7 +2,12 @@
 #include <avr/delay.h>
 #include "states.h"
 #include "timer_msec.h"
+#include "timer0.h"
+#include "timer2.h"
+
 #include "digital_out.h"
+#include "digital_in.h"
+#include "encoder.h"
 
 Context *context;
 char input;
@@ -49,13 +54,3 @@ void loop()
 
 	_delay_ms(500);
 }
-
-// ISR(TIMER1_COMPA_vect)
-// {
-//   led.set_hi();
-// }
-
-// ISR(TIMER1_COMPB_vect)
-// {
-//   led.set_lo();
-// }
