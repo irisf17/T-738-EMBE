@@ -7,7 +7,9 @@
 #include "encoder.h"
 
 #include <avr/delay.h>
+#include <avr/io.h>
 #include <avr/interrupt.h>
+#include <Arduino.h>
 
 // class Context;
 Digital_out led(5); // D13
@@ -29,10 +31,9 @@ Timer2 timer2_speed; // speed motor
 Timer0 timer0;
 
 // variables
-volatile double speed = 0;
+volatile double speed = 0.0;
 bool flag = 0;
 int time_interval = 1000;
-volatile int old_counter = 0;
 
 void Initialization::on_entry()
 {
@@ -54,14 +55,14 @@ void Initialization::on_entry()
   enc.init(encoder_input1.is_hi());
 
   // use if encoder is connected to interrupt pins
-  enc.init_interrupt(); // nota ef thad a ad nota interrupts!!
+  enc.init_interrupt(); // nota ef thad a ad nota interrupts!! INT0 is activated
 
   _delay_ms(1000);
 
   // ---- for timer ----
   // timer0.init(4000); fyrir p_controller
-  timer2_speed.init(time_interval);
-  timer0.init(1000);
+  // timer2_speed.init(time_interval);
+  // timer0.init(1000);
   // LED OFF
   timer1.init(10, 0.001);
 
@@ -113,15 +114,14 @@ void Operational::on_entry()
   Serial.println("Start MOTOR");
   // Counter clockwise rotation
   output_1.set_hi();
-  // motor speed
-  Serial.println("speed of motor:");
-  Serial.print(speed);
   // output_2.set_lo();
   // PWM_pin.set_hi();
 
+  // LED continous ON
   led.set_hi();
-  // timer1.init(20, 0.9);
-  timer1.init(1000, 0.9);
+  // To find speed 
+// time_interval above = 1000ms
+  timer1.init(time_interval);
 }
 
 void Operational::set_pre()
@@ -197,8 +197,11 @@ ISR(TIMER1_COMPB_vect)
 {
   if (flag)
   {
+    speed = (double)((enc.get_counter() / (time_interval * 1.0)) * 1000.0) / 1400.0 * 60.0;
+    
     Serial.print("Speed of motor is: ");
     Serial.println(speed);
+    enc.reset_counter();
   }
   else
   {
@@ -209,10 +212,7 @@ ISR(TIMER1_COMPB_vect)
 // interrupt for timer2 speed
 ISR(TIMER2_COMPA_vect)
 {
-  // enc.position(encoder_input1.is_hi(), encoder_input2.is_hi());
-  // rev per min
-  speed = (double)((enc.get_counter() / (time_interval * 1.0)) * 1000.0) / 1400.0 * 60.0;
-  enc.reset_counter();
+
 }
 // PWM
 ISR(TIMER2_COMPB_vect)
