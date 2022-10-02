@@ -5,6 +5,12 @@
 #include "digital_out.h"
 #include "digital_in.h"
 #include "encoder.h"
+#include "PI_controller.h"
+#include "motor_driver.h"
+#include "controller.h"
+#include "constants.h"
+
+
 
 #include <avr/delay.h>
 #include <avr/io.h>
@@ -20,20 +26,35 @@ Digital_out output_2(4);      // D12
 Digital_out PWM_pin(1);       // D9
 Digital_in encoder_input1(2); // D10
 Digital_in encoder_input2(3); // D11
+PI_Controller pi_controller(1.0, 1.0, 0.0, 0.99);
 
 // motor sensor speed
 encoder enc;
-// P_controller controller;
 
 // timer classes
 Timer_msec timer1;   // timer1
-Timer2 timer2_speed; // speed motor
+Timer2 timer2_pwm; // pwm control on motor
 Timer0 timer0;
 
 // variables
-volatile double speed = 0.0;
+volatile float speed = 0.0;
 bool flag = 0;
 int time_interval = 1000;
+float reference_speed = 110.0; //for 5 volt
+float error = 0.0;
+float P = 1.4 / constants::max_speed;
+float Ti = 0.01;
+float integration_T = 0.001;
+float max_output = 0.99;
+float control_signal = 0.0;
+int update_time = 0.0;
+
+float duty_cycle = 0.1;
+
+Controller* chosen_controller;
+
+
+
 
 void Initialization::on_entry()
 {
@@ -57,14 +78,18 @@ void Initialization::on_entry()
   // use if encoder is connected to interrupt pins
   enc.init_interrupt(); // nota ef thad a ad nota interrupts!! INT0 is activated
 
+  // initialize pi_controller for part3
+  pi_controller.init(P, Ti, integration_T, max_output);
+
   _delay_ms(1000);
 
   // ---- for timer ----
-  // timer0.init(4000); fyrir p_controller
-  // timer2_speed.init(time_interval);
-  // timer0.init(1000);
+  timer0.init(constants::control_rate);
   // LED OFF
   timer1.init(10, 0.001);
+  timer2_pwm.init(1500, 0.0);
+
+
 
   // for controller
   // controller.init(P);
@@ -83,6 +108,20 @@ void Pre_Operational::on_entry()
   output_1.set_lo();
   Serial.println("Led blinks at 1 Hz");
   timer1.init(1000, 0.5);
+
+  while (Serial.available() == 0)
+  {
+    Serial.println("Enter reference speed: ");
+    reference_speed = Serial.parseFloat();
+    // print new line
+    Serial.println("Enter K_p value: ");
+    P = Serial.parseFloat();
+    Serial.println("Enter T_i value: ");
+    Ti = Serial.parseFloat();
+    pi_controller.init(P, Ti, integration_T, max_output);
+    chosen_controller = &pi_controller;
+    Serial.println("PI-controller initialized");
+  }
   Serial.println("Ready to recieve commands");
 }
 
@@ -122,6 +161,15 @@ void Operational::on_entry()
   // To find speed 
 // time_interval above = 1000ms
   timer1.init(time_interval);
+  // Serial.println(update_time);
+
+  Serial.println(update_time);
+  if ((update_time % 2) == 1)
+  {
+    Serial.println("abba");
+    motor_driver(*chosen_controller);
+    update_time = 0;
+  }
 }
 
 void Operational::set_pre()
@@ -152,6 +200,7 @@ void Stop_state::on_entry()
   Serial.println("STATE: Stop ");
   // stop motor
   output_1.set_lo();
+  output_2.set_lo();
   Serial.println("LED blinks at 2 Hz");
   timer1.init(500, 0.5);
 }
@@ -187,6 +236,12 @@ ISR(INT0_vect)
 	enc.position(encoder_input1.is_hi(), encoder_input2.is_hi());
 }
 
+// interrupts at update rate
+ISR(TIMER0_COMPA_vect)
+{
+	update_time += 1;
+}
+
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -209,13 +264,14 @@ ISR(TIMER1_COMPB_vect)
   }
 }
 
-// interrupt for timer2 speed
+// interrupt for timer2 PWM
 ISR(TIMER2_COMPA_vect)
 {
+  PWM_pin.set_hi();
 
 }
 // PWM
 ISR(TIMER2_COMPB_vect)
 {
-  // PWM_pin.set_lo();
+  PWM_pin.set_lo();
 }
